@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rithik Bike Sales - Booking System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f9;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px;
+    }
+    .container {
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+      width: 460px;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #007bff;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .bike-preview {
+      margin: 15px 0;
+      text-align: center;
+    }
+    .bike-preview img {
+      max-width: 100%;
+      border-radius: 10px;
+      display: none;
+    }
+    .confirmation {
+      display: none;
+      margin-top: 20px;
+      padding: 15px;
+      background: #e6ffe6;
+      border: 1px solid #00cc44;
+      border-radius: 10px;
+    }
+    .confirmation h3 {
+      color: #008000;
+    }
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background: #007bff;
+      color: #fff;
+    }
+    #downloadBtn {
+      margin-top: 15px;
+      background: #28a745;
+    }
+    #downloadBtn:hover {
+      background: #1e7e34;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Bike Online Booking</h2>
+    <form id="bookingForm">
+      <input type="text" id="name" placeholder="Your Name" required>
+      <input type="text" id="phone" placeholder="Your Phone Number" required>
+      
+      <select id="bike" required>
+        <option value="">Select Bike Model</option>
+        <option value="Hero Splendor Plus">Hero Splendor Plus</option>
+        <option value="Royal Enfield Classic 350">Royal Enfield Classic 350</option>
+        <option value="Honda Shine">Honda Shine</option>
+        <option value="TVS Apache RTR 160">TVS Apache RTR 160</option>
+        <option value="Bajaj Pulsar 150">Bajaj Pulsar 150</option>
+        <option value="Yamaha FZ-S V3">Yamaha FZ-S V3</option>
+        <option value="KTM Duke 200">KTM Duke 200</option>
+      </select>
+
+      <!-- Preview Image -->
+      <div class="bike-preview">
+        <img id="preview" alt="Bike Preview">
+      </div>
+      
+      <input type="text" id="address" placeholder="Delivery Address" required>
+      <button type="submit">Confirm Booking</button>
+    </form>
+
+    <!-- Confirmation Box -->
+    <div class="confirmation" id="confirmationBox">
+      <h3>✅ Booking Confirmed!</h3>
+      <p id="confirmDetails"></p>
+    </div>
+
+    <!-- Booking List -->
+    <h3 style="margin-top: 30px; text-align: center;">📋 All Bookings</h3>
+    <table id="bookingTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Bike</th>
+          <th>Address</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- Download Button -->
+    <button id="downloadBtn">⬇️ Download Bookings (CSV)</button>
+  </div>
+
+  <script>
+    const bikeImages = {
+      "Hero Splendor Plus": "https://imgd.aeplcdn.com/664x374/bw/models/hero-splendor-plus-self-alloy-bs6-2020.jpg",
+      "Royal Enfield Classic 350": "https://imgd.aeplcdn.com/664x374/bw/models/royal-enfield-classic-350-single-channel-abs--bs-vi.jpg",
+      "Honda Shine": "https://imgd.aeplcdn.com/664x374/bw/models/honda-shine-drum-bs6-2020.jpg",
+      "TVS Apache RTR 160": "https://imgd.aeplcdn.com/664x374/bw/models/tvs-apache-rtr-160-front-disc-bs6-2020.jpg",
+      "Bajaj Pulsar 150": "https://imgd.aeplcdn.com/664x374/bw/models/bajaj-pulsar-150-single-disc-bs6-2020.jpg",
+      "Yamaha FZ-S V3": "https://imgd.aeplcdn.com/664x374/bw/models/yamaha-fz-s-v3-single-channel-abs-bs6-2020.jpg",
+      "KTM Duke 200": "https://imgd.aeplcdn.com/664x374/bw/models/ktm-duke-200-bs6.jpg"
+    };
+
+    const bikeSelect = document.getElementById("bike");
+    const previewImg = document.getElementById("preview");
+    const bookingTable = document.getElementById("bookingTable").querySelector("tbody");
+    let allBookings = []; // store all bookings
+
+    bikeSelect.addEventListener("change", function() {
+      let selected = bikeSelect.value;
+      if (bikeImages[selected]) {
+        previewImg.src = bikeImages[selected];
+        previewImg.style.display = "block";
+      } else {
+        previewImg.style.display = "none";
+      }
+    });
+
+    document.getElementById("bookingForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      
+      let name = document.getElementById("name").value;
+      let phone = document.getElementById("phone").value;
+      let bike = document.getElementById("bike").value;
+      let address = document.getElementById("address").value;
+
+      // Show confirmation
+      let confirmBox = document.getElementById("confirmationBox");
+      let confirmDetails = document.getElementById("confirmDetails");
+      confirmDetails.innerHTML = 
+        `<b>Name:</b> ${name}<br>
+         <b>Phone:</b> ${phone}<br>
+         <b>Bike Model:</b> ${bike}<br>
+         <b>Address:</b> ${address}`;
+      confirmBox.style.display = "block";
+
+      // Save booking in table
+      let newRow = bookingTable.insertRow();
+      newRow.insertCell(0).innerText = name;
+      newRow.insertCell(1).innerText = phone;
+      newRow.insertCell(2).innerText = bike;
+      newRow.insertCell(3).innerText = address;
+
+      // Save booking in array (for CSV)
+      allBookings.push([name, phone, bike, address]);
+
+      // Reset form
+      document.getElementById("bookingForm").reset();
+      previewImg.style.display = "none";
+    });
+
+    // Download CSV
+    document.getElementById("downloadBtn").addEventListener("click", function(){
+      if (allBookings.length === 0) {
+        alert("No bookings available to download!");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,"
+        + "Name,Phone,Bike,Address\n"
+        + allBookings.map(e => e.join(",")).join("\n");
+
+      let encodedUri = encodeURI(csvContent);
+      let link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "bike_bookings.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  </script>
+</body>
+</html>
